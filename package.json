@@ -1,0 +1,34 @@
+{
+  "name": "@baguettejs/core",
+  "version": "0.2.1",
+  "description": "🥖 Core framework for BaguetteJS — minimalist TypeScript backend",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -b tsconfig.json",
+    "dev": "tsc -w",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@baguettejs/utils": "^0.2.1",
+    "reflect-metadata": "^0.2.2"
+  },
+  "keywords": [
+    "typescript",
+    "framework",
+    "backend",
+    "decorators",
+    "baguettejs"
+  ],
+  "author": "Cyprien Tertrais",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@types/node": "^24.7.2"
+  }
+}
