@@ -1,20 +1,30 @@
 {
   "name": "@baguettejs/core",
-  "version": "0.2.1",
+  "version": "1.0.0",
+  "type": "module",
   "description": "🥖 Core framework for BaguetteJS — minimalist TypeScript backend",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
-    "dist"
+    "dist/**/*.js",
+    "dist/**/*.d.ts",
+    "dist/**/*.d.ts.map"
   ],
   "scripts": {
-    "build": "tsc -b tsconfig.json",
-    "dev": "tsc -w",
-    "clean": "rm -rf dist"
+    "build": "bun x tsc -b tsconfig.json",
+    "clean": "bun x tsc -b tsconfig.json --clean"
   },
   "dependencies": {
-    "@baguettejs/utils": "^0.2.1",
+    "@baguettejs/utils": "^1.0.0",
     "reflect-metadata": "^0.2.2"
+  },
+  "peerDependencies": {
+    "typescript": ">=5.0.0"
+  },
+  "peerDependenciesMeta": {
+    "typescript": {
+      "optional": true
+    }
   },
   "keywords": [
     "typescript",
@@ -29,6 +39,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "@types/node": "^24.7.2"
+    "@types/bun": "^1.4.2",
+    "typescript": "^5.9.2"
   }
 }

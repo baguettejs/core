@@ -4,3 +4,7 @@ export * from './decorator';
 export * from './param';
 export * from './router';
 export * from './middleware';
+export * from './registry';
+export * from './openapi';
+export * from './error';
+export * from './validation';

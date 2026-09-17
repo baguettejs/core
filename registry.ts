@@ -1,5 +1,11 @@
 export const ControllerRegistry: any[] = [];
 
 export function registerController(controller: any) {
-    ControllerRegistry.push(controller);
+    if (!ControllerRegistry.includes(controller)) {
+        ControllerRegistry.push(controller);
+    }
+}
+
+export function getRegisteredControllers(): readonly any[] {
+    return ControllerRegistry;
 }

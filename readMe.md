@@ -12,7 +12,7 @@ mais conçu pour être **léger**, **rapide** et **sans dépendances lourdes**.
 ## 🚀 Installation
 
 ```bash
-npm install baguettejs reflect-metadata
+bun add @baguettejs/core reflect-metadata
 ```
 
 > ⚠️ Vous devez activer les décorateurs et les métadonnées dans votre `tsconfig.json` :
@@ -20,11 +20,12 @@ npm install baguettejs reflect-metadata
 ```json
 {
   "compilerOptions": {
-    "target": "ES2020",
-    "module": "NodeNext",
+    "target": "ESNext",
+    "module": "Preserve",
+    "moduleResolution": "bundler",
+    "types": ["bun"],
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "esModuleInterop": true,
     "strict": true
   }
 }
@@ -36,7 +37,7 @@ npm install baguettejs reflect-metadata
 
 ```ts
 import 'reflect-metadata';
-import { App, Controller, Get, Post, Req, Res, Body } from 'baguettejs';
+import { App, Controller, Get, Post, Req, Res, Body } from '@baguettejs/core';
 import { UserService } from './services/user.service';
 
 @Controller('/users')
@@ -57,9 +58,62 @@ export class UserController {
 }
 
 const app = new App();
-app.bootstrap('src/controllers');
+app.use(async (_req, _res, next) => {
+  await next();
+});
+await app.bootstrap('src/controllers');
 app.listen(3000);
 ```
+
+## 📚 Documentation Swagger automatique
+
+Les routes et les paramètres décorés sont automatiquement exposés en OpenAPI :
+
+```ts
+const app = new App().swagger({
+  title: 'Users API',
+  version: '1.0.0',
+});
+
+await app.bootstrap('src/controllers');
+app.listen(3000);
+```
+
+- `GET /openapi.json` retourne le document OpenAPI 3.0.3 ;
+- `GET /docs` affiche Swagger UI ;
+- le deuxième argument de `@Get()`, `@Post()`, `@Patch()`, etc. enrichit les informations que TypeScript ne peut pas déduire seul, sans annotation supplémentaire.
+- un schéma `v.object(...)` peut servir à la fois pour valider les données et décrire le modèle dans OpenAPI ;
+- avec Swagger activé, le core analyse automatiquement les types TypeScript des signatures de contrôleurs (TypeScript doit être disponible dans le projet).
+
+```ts
+@Post('/', {
+  summary: 'Create a user',
+  tags: ['Users'],
+  response: { description: 'User created' },
+})
+create(@Body() body: Omit<User, 'id'>): User {}
+```
+
+Le modèle de réponse et le body sont générés à partir des types TypeScript de la signature. Les options `body.schema` et `response.schema` restent disponibles pour les cas particuliers ou les types impossibles à analyser.
+
+### Validation et erreurs HTTP
+
+Le core fournit une validation légère sans dépendance externe :
+
+```ts
+import { BadRequestError, NotFoundError, v } from '@baguettejs/core';
+
+const UserInput = v.object({
+  name: v.string({ minLength: 2, trim: true }),
+  email: v.string({ format: 'email', trim: true, lowercase: true }),
+});
+
+const input = UserInput.parse(body); // lance ValidationError si invalide
+if (!user) throw new NotFoundError('User not found');
+throw new BadRequestError('Invalid request');
+```
+
+Les erreurs HTTP sont centralisées par `App` et renvoient un JSON homogène avec `status`, `error`, `code` et `details` si nécessaire.
 
 ---
 
@@ -170,9 +224,14 @@ src/
 
 ---
 
+## 🧰 Inclus dans le runtime
+
+- [x] Middlewares globaux et par route
+- [x] Routage précompilé (lookup direct pour les routes statiques)
+- [x] Limite de taille des corps JSON
+
 ## 🧰 À venir
 
-- [ ] Middlewares globaux et par route
 - [ ] Gestion d’erreurs personnalisée
 - [ ] Guards (auth, rôles, permissions)
 - [ ] Validation automatique du `@Body()`
@@ -185,21 +244,20 @@ src/
 ### Lancer le projet en local
 
 ```bash
-npm install
-npm run dev
+bun install
+bun run dev
 ```
 
 ### Compiler le framework
 
 ```bash
-npm run build
+bun run build
 ```
 
-### Publier sur npm
+### Publier
 
 ```bash
-npm login
-npm publish --access public
+bun publish
 ```
 
 ---

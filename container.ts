@@ -3,28 +3,34 @@ import 'reflect-metadata';
 export class Container {
     private static instances = new Map<any, any>();
 
-    static resolve<T>(target: new (...args: any[]) => T): T {
+    static resolve<T>(target: new (...args: any[]) => T, resolving: any[] = []): T {
         if (!target) {
-            throw new Error('❌ Attempt to resolve undefined target');
+            throw new Error('Attempted to resolve an undefined dependency');
         }
 
         if (Container.instances.has(target)) {
             return Container.instances.get(target);
         }
 
-        console.log(`🧩 Resolving: ${target.name}`);
+        if (resolving.includes(target)) {
+            const chain = [...resolving, target].map((item) => item.name || '<anonymous>').join(' -> ');
+            throw new Error(`Circular dependency detected: ${chain}`);
+        }
 
-        // Récupère les types des paramètres du constructeur
         const paramTypes: any[] =
             Reflect.getMetadata('design:paramtypes', target) || [];
 
-        // Résout récursivement les dépendances
-        const dependencies = paramTypes.map((dep) => {
+        const dependencies = paramTypes.map((dep, index) => {
             if (!dep) {
-                throw new Error(`❌ Missing dependency metadata for ${target.name}`);
+                throw new Error(`Missing dependency metadata for ${target.name} (argument ${index})`);
             }
-            console.log(`  ↳ Dependency: ${dep.name}`);
-            return Container.resolve(dep);
+            if ([Object, Array, Function, String, Number, Boolean].includes(dep)) {
+                throw new Error(
+                    `Cannot inject ${dep.name} into ${target.name} (argument ${index}). ` +
+                    'Use a concrete class as the dependency type.'
+                );
+            }
+            return Container.resolve(dep, [...resolving, target]);
         });
         const instance = new target(...dependencies);
         Container.instances.set(target, instance);

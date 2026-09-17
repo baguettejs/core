@@ -2,7 +2,13 @@ import 'reflect-metadata';
 
 const PARAMS_KEY = Symbol('params');
 
-type ParamType = 'req' | 'res' | 'body' | 'param' | 'query';
+export type ParamType = 'req' | 'res' | 'body' | 'param' | 'query';
+
+export interface ParameterMetadata {
+    index: number;
+    type: ParamType;
+    name?: string;
+}
 
 function saveParam(
     target: any,
@@ -33,6 +39,6 @@ export function Query(name?: string): ParameterDecorator {
     return (t, k, i) => saveParam(t, k!, i, 'query', name);
 }
 
-export function getParamsMetadata(target: any, key: string | symbol) {
+export function getParamsMetadata(target: any, key: string | symbol): ParameterMetadata[] {
     return Reflect.getMetadata(PARAMS_KEY, target, key) || [];
 }
